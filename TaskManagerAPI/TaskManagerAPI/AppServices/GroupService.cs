@@ -52,19 +52,22 @@ public class GroupService (TaskMgrContext context)
         return group;
     }
 
-    public bool DeleteGroup(Guid id)
+    public void DeleteGroup(Guid id)
     {
         try
         {
             var dbGroup = context.Groups.FirstOrDefault(x => x.Id == id);
+
+            if(dbGroup == null)
+            {
+                throw new KeyNotFoundException();
+            }
             context.Groups.Remove(dbGroup);
             context.SaveChanges();
         }
-        catch
+        catch(Exception ex)
         {
-            return false;
+            throw ex;
         }
-
-        return true;
     }
 }

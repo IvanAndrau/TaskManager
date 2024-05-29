@@ -4,61 +4,62 @@ using System.Net;
 using TaskManagerAPI.AppServices;
 using TaskManagerAPI.ViewModel;
 
+
 namespace TaskManagerAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GroupController(GroupService groupService) : ControllerBase
+public class TaskController(TaskService taskService) : ControllerBase
 {
-    [HttpGet]
-    public IEnumerable<GroupModel> Get()
+    [HttpGet("get-by-groupId")]
+    public IEnumerable<TaskModel> Get([FromQuery] Guid groupId)
     {
-        return groupService.GetAllGroups();
+        return taskService.GetTasksByGroupId(groupId);
     }
 
     [HttpGet("{id:guid}")]
-    public GroupModel GetGroup([FromRoute] Guid id)
+    public TaskModel GetTask([FromRoute] Guid id)
     {
-        return groupService.GetGroupById(id);
+        return taskService.GetTaskById(id);
     }
 
     [HttpPut("{id:guid}")]
-    public GroupModel CreateGroup([FromRoute] Guid id, [FromBody] GroupModel group)
+    public TaskModel CreateTask([FromRoute] Guid id, [FromBody] TaskModel task)
     {
-        return groupService.AddGroup(group);
+        return taskService.AddTask(task);
     }
 
     [HttpPost("{id:guid}")]
-    [ProducesResponseType(typeof(GroupModel), (int) HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(TaskModel), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
-    public IActionResult UpdateGroup([FromRoute] Guid id, [FromBody] GroupModel group)
+    public IActionResult UpdateTask([FromRoute] Guid id, [FromBody] TaskModel task)
     {
         try
         {
-            groupService.UpdateGroup(group);
+            taskService.UpdateTask(task);
         }
         catch (Exception ex)
         {
             return NotFound();
         }
-        return Ok(group);
+        return Ok(task);
     }
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType((int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
-    public IActionResult DeleteGroup([FromRoute] Guid id)
+    public IActionResult DeleteTask([FromRoute] Guid id)
     {
         try
         {
-            groupService.DeleteGroup(id);
+            taskService.DeleteTask(id);
         }
-        catch(KeyNotFoundException ex)
+        catch (KeyNotFoundException ex)
         {
             return NotFound();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }

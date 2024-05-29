@@ -12,6 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<TaskService>();
 
 builder.Services.AddDbContext<TaskMgrContext>(dbCtx =>  
             dbCtx.UseNpgsql("Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=taskmgr"));

@@ -41,7 +41,7 @@ namespace TaskManagerAPI.Migrations
                         column: x => x.GroupId,
                         principalTable: "Groups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade);   //TODO: change to not cascade
                 });
 
             migrationBuilder.CreateIndex(
