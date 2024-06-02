@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
 namespace TaskManagerAPI.EF;
 
-public class TaskMgrContext : DbContext
+public class TaskMgrContext : IdentityDbContext   //Add <IdentityUser>  ?
 {
     public DbSet<Task> Tasks { get; set; }
 
@@ -16,6 +18,7 @@ public class TaskMgrContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
     }
 
 }
