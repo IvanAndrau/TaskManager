@@ -7,22 +7,24 @@ using Task = TaskManagerAPI.EF.Task;
 public class TaskService (TaskMgrContext context)
 {
 
-    public TaskModel AddTask(TaskModel task)
+    public TaskModel AddTask(TaskModel task, string userId)
     {
         var dbTask = new Task();
+        dbTask.UserId = userId;
         dbTask.Name = task.Name;
-        dbTask.Id = task.Id;
+        dbTask.Id = Guid.NewGuid();
         dbTask.Description = task.Description;
         dbTask.ActionDate = task.ActionDate;
         dbTask.GroupId = task.GroupId;
         context.Tasks.Add(dbTask);
         context.SaveChanges();
+        task.Id = dbTask.Id;
         return task;
-}
+    }
 
-    public IEnumerable<TaskModel> GetTasksByGroupId(Guid groupId)
+    public IEnumerable<TaskModel> GetTasksByGroupId(Guid groupId, string userId)
     {
-        var dbTasks = context.Tasks.Where(x => x.GroupId == groupId);
+        var dbTasks = context.Tasks.Where(x => x.GroupId == groupId && x.UserId == userId);
         List<TaskModel> tasks = new List<TaskModel>();
         foreach (var task in dbTasks)
         {
@@ -38,9 +40,9 @@ public class TaskService (TaskMgrContext context)
         return tasks;
     }
 
-    public TaskModel GetTaskById(Guid id)
+    public TaskModel GetTaskById(Guid id, string userId)
     {
-        var task = context.Tasks.FirstOrDefault(x => x.Id == id);
+        var task = context.Tasks.FirstOrDefault(x => x.Id == id && x.UserId == userId);
         return new TaskModel()
         {
             Id = task.Id,
@@ -51,9 +53,9 @@ public class TaskService (TaskMgrContext context)
         };
     }
 
-    public TaskModel UpdateTask(TaskModel task)
+    public TaskModel UpdateTask(TaskModel task, string userId)
     {
-        var dbTask = context.Tasks.FirstOrDefault(x => x.Id == task.Id);
+        var dbTask = context.Tasks.FirstOrDefault(x => x.Id == task.Id && x.UserId == userId);
         if (dbTask == null)
         {
             throw new InvalidOperationException();
@@ -62,16 +64,17 @@ public class TaskService (TaskMgrContext context)
         dbTask.Description = task.Description;
         dbTask.ActionDate = task.ActionDate;
         dbTask.GroupId = task.GroupId;
+        dbTask.UserId = userId;                 //
         context.SaveChanges();
 
         return task;
     }
 
-    public void DeleteTask(Guid id)
+    public void DeleteTask(Guid id, string userId)
     {
         try
         {
-            var dbTask = context.Tasks.FirstOrDefault(x => x.Id == id);
+            var dbTask = context.Tasks.FirstOrDefault(x => x.Id == id && x.UserId == userId);
 
             if (dbTask == null)
             {

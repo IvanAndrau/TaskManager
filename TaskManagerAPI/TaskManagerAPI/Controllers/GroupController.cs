@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using TaskManagerAPI.AppServices;
+using TaskManagerAPI.EF;
 using TaskManagerAPI.ViewModel;
 
 namespace TaskManagerAPI.Controllers;
@@ -13,31 +14,55 @@ namespace TaskManagerAPI.Controllers;
 public class GroupController(GroupService groupService) : ControllerBase
 {
     [HttpGet]
-    public IEnumerable<GroupModel> Get()
+    [ProducesResponseType((int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+    public IActionResult Get()
     {
-        return groupService.GetAllGroups();
+        IEnumerable<GroupModel> groups = new List<GroupModel>();
+        try
+        {
+            var userId = HttpContextHelper.GetUserId(User);
+            groups = groupService.GetAllGroups(userId);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        return Ok(groups);
+
     }
 
     [HttpGet("{id:guid}")]
-    public GroupModel GetGroup([FromRoute] Guid id)
+    [ProducesResponseType(typeof(GroupModel), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    public IActionResult GetGroup([FromRoute] Guid id)
     {
-        return groupService.GetGroupById(id);
+        var userId = HttpContextHelper.GetUserId(User);
+        var group = groupService.GetGroupById(id, userId);
+        if (group == null) return NotFound();
+        return Ok(group);
     }
 
-    [HttpPut("{id:guid}")]
-    public GroupModel CreateGroup([FromRoute] Guid id, [FromBody] GroupModel group)
+    [HttpPost]
+    [ProducesResponseType(typeof(GroupModel), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    public IActionResult CreateGroup([FromBody] GroupModel group)
     {
-        return groupService.AddGroup(group);
+        var userId = HttpContextHelper.GetUserId(User);
+        var result = groupService.AddGroup(group, userId);
+        if (result == null) return NotFound();
+        return Ok(result);
     }
 
-    [HttpPost("{id:guid}")]
+    [HttpPut]
     [ProducesResponseType(typeof(GroupModel), (int) HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
-    public IActionResult UpdateGroup([FromRoute] Guid id, [FromBody] GroupModel group)
+    public IActionResult UpdateGroup([FromBody] GroupModel group)
     {
         try
         {
-            groupService.UpdateGroup(group);
+            var userId = HttpContextHelper.GetUserId(User);
+            groupService.UpdateGroup(group, userId);
         }
         catch (Exception ex)
         {
@@ -54,7 +79,8 @@ public class GroupController(GroupService groupService) : ControllerBase
     {
         try
         {
-            groupService.DeleteGroup(id);
+            var userId = HttpContextHelper.GetUserId(User);
+            groupService.DeleteGroup(id, userId);
         }
         catch(KeyNotFoundException ex)
         {
