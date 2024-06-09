@@ -3,10 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using System;
 using TaskManagerAPI.AppServices;
 using TaskManagerAPI.EF;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddDbContext<TaskMgrContext>(dbCtx =>
+            dbCtx.UseNpgsql("Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=taskmgr"));
 
 // Add services to the container.
 
@@ -17,6 +22,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<GroupService>();
 builder.Services.AddScoped<TaskService>();
+
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+//    .AddEntityFrameworkStores<TaskMgrContext>()
+//    .AddDefaultTokenProviders();
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -43,20 +52,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtAuthentication();
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//}).AddJwtAuthentication();
 
 
-
-builder.Services.AddDbContext<TaskMgrContext>(dbCtx =>  
-            dbCtx.UseNpgsql("Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=taskmgr"));
 
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<TaskMgrContext>();
+    .AddEntityFrameworkStores<TaskMgrContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -70,6 +77,8 @@ if (app.Environment.IsDevelopment())
 app.MapIdentityApi<IdentityUser>();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
